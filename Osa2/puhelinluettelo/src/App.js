@@ -66,6 +66,12 @@ const App = () => {
         console.log("promise fulfilled");
         setPersons(response.data);
       })
+      // Virheenkäsittely jos esim. jää palvelin laittamatta päälle.
+      .catch(error => {
+        console.log("promise rejected");
+        console.log(error);
+        console.log("Did you forgot to start the server?");
+      });
   }, []);
 
   const handleFormSubmit = (event) => {
