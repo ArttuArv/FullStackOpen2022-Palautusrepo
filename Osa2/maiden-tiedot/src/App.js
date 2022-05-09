@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-const dotenv = require('./process.env')
 
 
 const CountryInfo = ({ countries, buttonClick }) => {
@@ -83,7 +82,7 @@ const App = () => {
 
   useEffect(() => {
     axios
-      .get(`https://api.openweathermap.org/data/2.5/weather?q=${"Helsinki"}&appid=${dotenv.WEATHER_APIKEY}`)
+      .get(`https://api.openweathermap.org/data/2.5/weather?q=${"Helsinki"}&appid=${0}`)
       .then(response => {
         console.log("response.data", response.data);
         setWeather(response.data);
