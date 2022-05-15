@@ -1,56 +1,17 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import PersonForm from './components/Personform';
+import Persons from './components/Persons';
+import Filter from './components/Filter';
+import Notification from './components/Notification';
+import personService from './services/persons';
 
-const Filter = ({nameFilter, handleNameFilterChange}) => {
-  return (
-    <>
-      Filter shown with
-      <input 
-        value = {nameFilter} 
-        onChange = {handleNameFilterChange} 
-      />
-    </>
-  )
-}
+import './index.css';
 
-const PersonForm = ({handleFormSubmit, newName, handleNameChange, newNumber, handleNumberChange}) => {
-  return (
-    <form onSubmit = {handleFormSubmit}>
-      <div>
-        Name:
-        <input 
-          value = {newName}
-          onChange = {handleNameChange}
-        />
-      </div>
-      <div>
-        Number:
-        <input
-          value = {newNumber}
-          onChange = {handleNumberChange}
-        />
-      </div> 
-      <>
-        <button type="submit">Add</button>
-      </>
-    </form>
-  )
-}
-
-const Persons = ({personsToShow}) => {
-  return (
-    <>
-      {personsToShow.map(person =>
-        <p key={person.name}>
-          {person.name} {person.number}
-        </p>)}
-    </>
-  )
-}
 
 const App = () => {
   const [persons, setPersons] = useState([]);
-  const[filteredPersons, setFilteredPersons] = useState([]);
+  const [filteredPersons, setFilteredPersons] = useState([]);
+  const [statusMessage, setStatusMessage] = useState(null)
 
   // Lomakkeen kenttien kontrollointiin
   const [newName, setNewName] = useState('');
@@ -59,12 +20,10 @@ const App = () => {
 
   // Haetaan palvelimelta tiedot ja asetetaan ne persons-taulukkoon
   useEffect(() => {
-    console.log("Effect");
-    axios
-      .get('http://localhost:3001/persons')
-      .then(response => {
-        console.log("promise fulfilled");
-        setPersons(response.data);
+    personService
+      .getAll()
+      .then(initialPersons => {
+        setPersons(initialPersons);
       })
       // Virheenkäsittely jos esim. jää palvelin laittamatta päälle.
       .catch(error => {
@@ -75,21 +34,31 @@ const App = () => {
   }, []);
 
   const handleFormSubmit = (event) => {
-    event.preventDefault();    
-
-    // Tarkastetaan löytyykö nimi jo listasta
-    if (persons.find(person => person.name === newName)) {
-      alert(`${newName} is already added to phonebook`);
-      emptyInputFields();
-    } else {
-      // Tehdään uusi henkilöobjekti, joka sisältää nimen ja numeron
-      const newPerson = {
-        name: newName,
-        number: newNumber,
+    event.preventDefault();
+    
+    // Tarkastetaan onko kentät tyhjät
+    if (newName !== '' && newNumber !== '') {
+      // Suodatetaan persons käyttäen syöttökentästä saatua nimeä
+      const personObject = persons.find(person => person.name === newName);
+      
+      // Jos objekti on tuntematon, nimi on uusi
+      if (personObject === undefined) { 
+        handleCreatePerson();
+      } 
+      // Muutoin katsellaan päivitysehdot läpi
+      else {
+        if (personObject.name === newName && personObject.number !== newNumber) {        
+          handleUpdatePerson(personObject);
+        }
+        // Jos nimi ja numero löytyy listasta.
+        else if (personObject.name === newName && personObject.number === newNumber) { 
+          alert(`${newName} with ${newNumber} is already added to phonebook`);
+        }
       }
-      setPersons(persons.concat(newPerson));  // Lisätään henkilöobketi persons-taulukkoon
-      emptyInputFields();      
-    }   
+      emptyInputFields();  // Tyhjennetään lopulta lomakkeen kentät       
+    } else {
+      alert('Please enter a name and a number');
+    }     
   }
   
   // Funktio tekstikenttien tyhjennystä varten
@@ -111,6 +80,65 @@ const App = () => {
     setFilteredPersons(filteredPersons); 
   }
 
+  // Henkilön luontifunktio
+  const handleCreatePerson = () => {
+    // Tehdään uusi henkilöobjekti, joka sisältää nimen ja numeron
+    const newPerson = {
+      name: newName,
+      number: newNumber,
+    }
+    // Lisätään henkilö palvelimelle
+    personService
+      .createPerson(newPerson).then(returnedPerson => {
+          notificationMessage(`${newPerson.name} was added to phonebook`);
+          setPersons(persons.concat(returnedPerson));
+      }) 
+  }     
+  // Henkilön tuhoamisfunktio.
+  const handleDeletePerson = (id) => {
+    const person = persons.find(person => person.id === id);
+    if (window.confirm(`Delete ${person.name}?`)) { 
+      personService
+        .deletePerson(id).then(() => {
+          notificationMessage(`${person.name} was deleted from server`);
+          setPersons(persons.filter(person => person.id !== id));
+        })
+        .catch(error => {
+          alert(`${person.name} has already been removed!`);
+          setPersons(persons.filter(person => person.id !== id));
+        });
+    } 
+  }
+  // Henkilön päivitysfunktio
+  const handleUpdatePerson = (personObj) => {     
+    if (window.confirm(`${newName} is already added to phonebook, replace the old number with a new one?`)) {	
+      const changedPerson = { 
+        ...personObj, 
+        number: newNumber 
+      };
+
+      // Päivitys palvelimelle
+      personService
+        .updatePerson(changedPerson.id, changedPerson).then(returnedPerson => {
+          setPersons(persons.map(person => person.id !== changedPerson.id 
+            ? person 
+            : returnedPerson ));
+          notificationMessage(`${newName} number updated`);
+        })
+        .catch(error => {
+          alert(`${changedPerson.name} was already deleted from server`);
+          setPersons(persons.filter(person => person.id !== changedPerson.id));
+        });
+    }            
+  }
+
+  const notificationMessage = (message) => {
+    setStatusMessage(message);
+    setTimeout(() => {
+      setStatusMessage(null);
+    }, 5000);
+  }
+
   // Jos filtteröidyssä nimilistassa on tavaraa, niin näytetään filtteröity taulukko, muuten näytetään persons-taulukko.
   const personsToShow = filteredPersons.length > 0 
     ? filteredPersons 
@@ -119,6 +147,7 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notification message={statusMessage} />
       <Filter nameFilter = {nameFilter} handleNameFilterChange = {handleNameFilterChange} />
       <h2>Add a new number</h2>
       <PersonForm 
@@ -129,7 +158,7 @@ const App = () => {
         handleNumberChange = {handleNumberChange}
       />
       <h2>Numbers</h2>
-      <Persons personsToShow = {personsToShow}/>
+      <Persons personsToShow = {personsToShow} handleDeletePerson = {handleDeletePerson} />
     </div>
   )
 }
