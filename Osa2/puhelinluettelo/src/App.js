@@ -89,9 +89,9 @@ const App = () => {
     }
     // Lisätään henkilö palvelimelle
     personService
-      .createPerson(newPerson).then(returnedPerson => {
-          notificationMessage(`${newPerson.name} was added to phonebook`);
+      .createPerson(newPerson).then(returnedPerson => {          
           setPersons(persons.concat(returnedPerson));
+          notificationMessage(`${newPerson.name} was added to phonebook`);
       }) 
   }     
   // Henkilön tuhoamisfunktio.
@@ -99,9 +99,9 @@ const App = () => {
     const person = persons.find(person => person.id === id);
     if (window.confirm(`Delete ${person.name}?`)) { 
       personService
-        .deletePerson(id).then(() => {
-          notificationMessage(`${person.name} was deleted from server`);
+        .deletePerson(id).then(() => {          
           setPersons(persons.filter(person => person.id !== id));
+          notificationMessage(`${person.name} was deleted from server`);
         })
         .catch(error => {
           alert(`${person.name} has already been removed!`);
@@ -140,9 +140,9 @@ const App = () => {
   }
 
   // Jos filtteröidyssä nimilistassa on tavaraa, niin näytetään filtteröity taulukko, muuten näytetään persons-taulukko.
-  const personsToShow = filteredPersons.length > 0 
-    ? filteredPersons 
-    : persons;
+  const personsToShow = (nameFilter.length === 0) 
+    ? persons 
+    : filteredPersons;
 
   return (
     <div>
