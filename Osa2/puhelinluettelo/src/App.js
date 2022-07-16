@@ -89,10 +89,15 @@ const App = () => {
     }
     // Lisätään henkilö palvelimelle
     personService
-      .createPerson(newPerson).then(returnedPerson => {          
+      .createPerson(newPerson)
+      .then(returnedPerson => {          
           setPersons(persons.concat(returnedPerson));
           notificationMessage(`${newPerson.name} was added to phonebook`);
-      }) 
+      }).catch(error => {
+        console.log(error.response.data);
+        const errorData = error.response.data.error;
+        notificationMessage(JSON.stringify(errorData));
+      })
   }     
   // Henkilön tuhoamisfunktio.
   const handleDeletePerson = (id) => {
