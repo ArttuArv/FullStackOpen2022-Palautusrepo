@@ -43,7 +43,7 @@ const App = () => {
     blogService.getAll().then(blogs => {
       blogs.sort((a, b) => b.likes - a.likes)
       setBlogs( blogs )
-    }) 
+    })
   }, [])
 
   // To check localStorage if the user is logged in or not
@@ -109,7 +109,7 @@ const App = () => {
       .then(returnedBlog => {
         const oldBlog = blogs.find(blog => blog.id === id)
         const newBlog = {
-          id: returnedBlog.id, 
+          id: returnedBlog.id,
           title: returnedBlog.title,
           author: returnedBlog.author,
           url: returnedBlog.url,
@@ -154,20 +154,20 @@ const App = () => {
       <h1>Blogs</h1>
       {user === null
         ? <Togglable buttonLabel = 'Login'>
-            <LoginForm userLogin = {handleLogin} />
-          </Togglable>
+          <LoginForm userLogin = {handleLogin} />
+        </Togglable>
         : <>
-            <p>{user.name} logged in <button onClick={handleLogout}>Logout</button></p>
-            <Togglable buttonLabel = 'Create New Blog' ref = {blogFormRef}>
-              <BlogForm createBlog = {addBlog} />
-            </Togglable>
-            <>
-              {blogs.map(blog =>
-                <Blog blogLikes = {likeBlog} blogDelete = {deleteBlog} key={blog.id} blog={blog} />
-              )}
-            </>
+          <p>{user.name} logged in <button onClick={handleLogout}>Logout</button></p>
+          <Togglable buttonLabel = 'Create New Blog' ref = {blogFormRef}>
+            <BlogForm createBlog = {addBlog} />
+          </Togglable>
+          <>
+            {blogs.map(blog =>
+              <Blog blogLikes = {likeBlog} blogDelete = {deleteBlog} key={blog.id} blog={blog} />
+            )}
           </>
-      }      
+        </>
+      }
     </>
   )
 }
