@@ -1,11 +1,9 @@
-import { useState } from 'react'
+import { useState, } from 'react'
 
 const BlogForm = ({ createBlog }) => {
-  const [newBlog, setNewBlog] = useState('')
   const [author, setAuthor] = useState('')
   const [title, setTitle] = useState('')
   const [url, setUrl] = useState('')
-  const [likes, setLikes] = useState(0)
 
   const addBlog = (event) => {
     event.preventDefault()
@@ -16,11 +14,13 @@ const BlogForm = ({ createBlog }) => {
       url: url,
     })
 
-    setNewBlog('')
+    setAuthor('')
+    setTitle('')
+    setUrl('')
   }
 
   return (
-    <>
+    <div>
       <h1>Create new</h1>
       <form onSubmit={addBlog}>
         <div>
@@ -52,7 +52,7 @@ const BlogForm = ({ createBlog }) => {
         </div>
         <button type="submit">create</button>
       </form>
-    </>
+    </div>
   )
 }
 

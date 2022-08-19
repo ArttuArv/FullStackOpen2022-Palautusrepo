@@ -35,15 +35,15 @@ const App = () => {
   const [errorMessage, setErrorMessage] = useState(null)
   const [successMessage, setSuccessMessage] = useState(null)
   const [user, setUser] = useState(null)
-  const [newBlog, setNewBlog] = useState('')
 
   const blogFormRef = useRef()
 
   // Get all blogs from the server
   useEffect(() => {
-    blogService.getAll().then(blogs =>
+    blogService.getAll().then(blogs => {
+      blogs.sort((a, b) => b.likes - a.likes)
       setBlogs( blogs )
-    )  
+    }) 
   }, [])
 
   // To check localStorage if the user is logged in or not
@@ -85,11 +85,57 @@ const App = () => {
 
   // Add new blog
   const addBlog = (blogObject, title, author) => {
+    blogFormRef.current.toggleVisibility()
     blogService
       .create(blogObject)
       .then(returnedBlog => {
         setBlogs(blogs.concat(returnedBlog))
         setSuccessMessage(`a new blog ${title} by ${author} added`)
+        setTimeout(() => {
+          setSuccessMessage(null)
+        }, 5000)
+      }).catch(exception => {
+        setErrorMessage('Error: ' + exception.response.data.error)
+        setTimeout(() => {
+          setErrorMessage(null)
+        }, 5000)
+      })
+  }
+
+  // Like a blog function
+  const likeBlog = (id, blogObject) => {
+    blogService
+      .update(id, blogObject)
+      .then(returnedBlog => {
+        const oldBlog = blogs.find(blog => blog.id === id)
+        const newBlog = {
+          id: returnedBlog.id, 
+          title: returnedBlog.title,
+          author: returnedBlog.author,
+          url: returnedBlog.url,
+          likes: returnedBlog.likes,
+          user: oldBlog.user
+        }
+        setBlogs(blogs.map(blog => blog.id !== id ? blog : newBlog))
+        setSuccessMessage(`You liked ${newBlog.title} blog owned by ${newBlog.user.name}`)
+        setTimeout(() => {
+          setSuccessMessage(null)
+        }, 5000)
+      }).catch(exception => {
+        setErrorMessage('Error: ' + exception.response.data.error)
+        setTimeout(() => {
+          setErrorMessage(null)
+        }, 5000)
+      })
+  }
+
+  // Delete a blog function
+  const deleteBlog = (id) => {
+    blogService
+      .remove(id)
+      .then(() => {
+        setBlogs(blogs.filter(blog => blog.id !== id))
+        setSuccessMessage('Blog deleted')
         setTimeout(() => {
           setSuccessMessage(null)
         }, 5000)
@@ -107,17 +153,17 @@ const App = () => {
       {successMessage && <Notification message = {successMessage} style = {successStyle} />}
       <h1>Blogs</h1>
       {user === null
-        ? <Togglable buttonLabel = 'login'>
+        ? <Togglable buttonLabel = 'Login'>
             <LoginForm userLogin = {handleLogin} />
           </Togglable>
         : <>
             <p>{user.name} logged in <button onClick={handleLogout}>Logout</button></p>
-            <Togglable buttonLabel = 'new blog' ref = {blogFormRef}>
+            <Togglable buttonLabel = 'Create New Blog' ref = {blogFormRef}>
               <BlogForm createBlog = {addBlog} />
             </Togglable>
             <>
               {blogs.map(blog =>
-                <Blog key={blog.id} blog={blog} />
+                <Blog blogLikes = {likeBlog} blogDelete = {deleteBlog} key={blog.id} blog={blog} />
               )}
             </>
           </>
