@@ -27,17 +27,17 @@ const Blog = ({ blog, blogLikes, blogDelete }) => {
 
   const simpleBlogData = () => (
     <div style={blogStyle}>
-      <p><b>{blog.title}</b><button className = 'boxButton' onClick={() => setShowAll(true)}>view</button></p>
+      <p><b>{blog.title}</b> {blog.author}  <button className = 'boxButton' onClick={() => setShowAll(true)}>view</button></p>
     </div>
   )
 
-  const allBlogData = () => ( 
+  const allBlogData = () => (
     <div style = {blogStyle}>
       <p><b>{blog.title}</b><button className = 'boxButton' onClick = {() => setShowAll(false)}>Hide</button></p>
       <p> {blog.author}</p>
       <p> {blog.url}</p>
       <p> {blog.likes}<button className = 'boxButton' onClick = {likeBlog} >Like</button></p>
-      <p><b>{blog.user?.name}</b></p>  {/*Kysymysmerkki koska backendissä on blogeja, joilla ei ole käyttäjiä*/}
+      <p><b>{blog.user.name}</b></p>
       <button onClick = {deleteBlog}>Delete</button>
     </div>
   )
@@ -59,12 +59,12 @@ const Blog = ({ blog, blogLikes, blogDelete }) => {
       blogDelete(blog.id)
     }
   }
- 
+
   return (
     <div style = {blogWrapperStyle}>
       {showAll === true
         ? allBlogData()
-        : simpleBlogData()        
+        : simpleBlogData()
       }
     </div>
   )

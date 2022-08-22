@@ -84,13 +84,20 @@ const App = () => {
   }
 
   // Add new blog
-  const addBlog = (blogObject, title, author) => {
+  const addBlog = (blogObject) => {
     blogFormRef.current.toggleVisibility()
     blogService
       .create(blogObject)
       .then(returnedBlog => {
-        setBlogs(blogs.concat(returnedBlog))
-        setSuccessMessage(`a new blog ${title} by ${author} added`)
+        const blog = blogs.find(blog => blog.user.id === returnedBlog.user)
+        const newBlog = {
+          ...returnedBlog,
+          user: {
+            ...blog.user
+          }
+        }
+        setBlogs(blogs.concat(newBlog))
+        setSuccessMessage(`a new blog ${returnedBlog.title} by ${returnedBlog.author} added`)
         setTimeout(() => {
           setSuccessMessage(null)
         }, 5000)
