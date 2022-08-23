@@ -26,13 +26,13 @@ const Blog = ({ blog, blogLikes, blogDelete }) => {
   }
 
   const simpleBlogData = () => (
-    <div style={blogStyle}>
+    <div className = "blog" style={blogStyle}>
       <p><b>{blog.title}</b> {blog.author}  <button className = 'boxButton' onClick={() => setShowAll(true)}>view</button></p>
     </div>
   )
 
   const allBlogData = () => (
-    <div style = {blogStyle}>
+    <div className = "blog" style = {blogStyle}>
       <p><b>{blog.title}</b><button className = 'boxButton' onClick = {() => setShowAll(false)}>Hide</button></p>
       <p> {blog.author}</p>
       <p> {blog.url}</p>

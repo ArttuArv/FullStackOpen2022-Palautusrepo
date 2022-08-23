@@ -102,7 +102,8 @@ const App = () => {
           setSuccessMessage(null)
         }, 5000)
       }).catch(exception => {
-        setErrorMessage('Error: ' + exception.response.data.error)
+        setErrorMessage('error: Blog not created')
+        console.log('error', exception)
         setTimeout(() => {
           setErrorMessage(null)
         }, 5000)
@@ -129,7 +130,7 @@ const App = () => {
           setSuccessMessage(null)
         }, 5000)
       }).catch(exception => {
-        setErrorMessage('Error: ' + exception.response.data.error)
+        setErrorMessage('error: ',  exception.response.error )
         setTimeout(() => {
           setErrorMessage(null)
         }, 5000)
