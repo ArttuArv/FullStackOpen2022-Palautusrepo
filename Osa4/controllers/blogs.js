@@ -58,15 +58,15 @@ blogsRouter.post('/', async (request, response) => {
 })
 
 blogsRouter.delete('/:id', async (request, response) => {
-  const blogId = await Blog.findById(request.params.id)
+  const blog = await Blog.findById(request.params.id)
   const userId = request.user.id
 
-  if (blogId) {
-    if (blogId.user.toString() === userId.toString()) {
+  if (blog) {
+    if (blog.user.toString() === userId.toString()) {
       await Blog.findByIdAndDelete(request.params.id)
       response.status(204).end()
     } else {
-      return response.status(401).json({ error: 'unauthorized' })
+      return response.status(401).json({ error: 'You can only delete your own blogs!' })
     }
   } else {
     response.status(404).json({ error: 'blog not found' })
@@ -87,7 +87,7 @@ blogsRouter.put('/:id', async (request, response) => {
         likes: body.likes,
       }
 
-      const updatedBlog = await Blog.findByIdAndUpdate(request.params.id, blog, { new: true })
+      const updatedBlog = await Blog.findByIdAndUpdate(request.params.id, blog, { new: true, runValidators: true, context: 'query' })
       response.json(updatedBlog)
     } else {
       return response.status(401).json({ error: 'unauthorized' })
